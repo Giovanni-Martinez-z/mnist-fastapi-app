@@ -60,7 +60,7 @@ def home():
             <p>Prueba la API en <a href="/docs">/docs</a></p>
         </body>
     </html>
-    """.format(TF_VERSION="2.18.0")  # Usa el valor directamente o define TF_VERSION arriba
+    """
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
