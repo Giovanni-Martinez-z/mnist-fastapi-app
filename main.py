@@ -20,19 +20,22 @@ model = tf.keras.models.load_model('mnist_model.h5')
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    # Leer y preprocesar imagen
-    image = Image.open(io.BytesIO(await file.read())).convert('L')
-    image = Image.invert(image)
-    image = image.resize((28, 28))
-    image_array = np.array(image).astype("float32") / 255.0
-    input_data = image_array.reshape(1,28,28)
+    try:
+        image = Image.open(io.BytesIO(await file.read())).convert('L')
+        image = Image.invert(image)
+        image = image.resize((28, 28))
+        image_array = np.array(image) / 255.0
+        input_data = image_array[np.newaxis, ...].astype(np.float32)
 
-    # Predecir
-    prediction = model.predict(input_data)
-    return {
-        "digit": int(np.argmax(prediction)),
-        "confidence": float(np.max(prediction)*100,2)
-    }
+        prediction = model.predict(input_data)
+        return {
+            "digit": int(np.argmax(prediction)),
+            "confidence": float(np.max(prediction))
+        }
+    except Exception as e:
+        print("Error en el backend:", e)
+        return {"error": str(e)}
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
