@@ -90,6 +90,11 @@
                 }
 
                 const data = await response.json();
+                if (data.error) {
+                resultDiv.textContent = 'Error en el servidor: ' + data.error;
+                return;
+            }
+
                 resultDiv.innerHTML = `
                     <strong>Predicción:</strong> ${data.digit}<br>
                     <strong>Confianza:</strong> ${(data.confidence * 100).toFixed(2)}%
