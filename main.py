@@ -22,15 +22,16 @@ model = tf.keras.models.load_model('mnist_model.h5')
 async def predict(file: UploadFile = File(...)):
     # Leer y preprocesar imagen
     image = Image.open(io.BytesIO(await file.read())).convert('L')
+    image = Image.invert(image)
     image = image.resize((28, 28))
-    image_array = np.array(image) / 255.0
-    input_data = image_array[np.newaxis, ..., np.newaxis].astype(np.float32)
+    image_array = np.array(image).astype("float32") / 255.0
+    input_data = image_array.reshape(1,28,28)
 
     # Predecir
     prediction = model.predict(input_data)
     return {
         "digit": int(np.argmax(prediction)),
-        "confidence": float(np.max(prediction))
+        "confidence": float(np.max(prediction)*100,2)
     }
 
 @app.get("/", response_class=HTMLResponse)
