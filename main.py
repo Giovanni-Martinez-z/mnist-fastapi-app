@@ -7,7 +7,8 @@ from PIL import Image
 import io
 
 app = FastAPI()
-model = load_model('mnist_model.h5')
+model = load_model('mnist_model.tflite')
+
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
