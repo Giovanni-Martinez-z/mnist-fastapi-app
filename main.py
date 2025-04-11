@@ -1,5 +1,4 @@
 import os
-import uvicorn
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse
 import tensorflow as tf
@@ -42,8 +41,16 @@ def home():
         <head>
             <title>MNIST Classifier</title>
             <style>
-                body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-                code { background: #f4f4f4; padding: 2px 5px; }
+                body { 
+                    font-family: Arial, sans-serif; 
+                    max-width: 800px; 
+                    margin: 0 auto; 
+                    padding: 20px; 
+                }
+                code { 
+                    background: #f4f4f4; 
+                    padding: 2px 5px; 
+                }
             </style>
         </head>
         <body>
@@ -53,7 +60,7 @@ def home():
             <p>Prueba la API en <a href="/docs">/docs</a></p>
         </body>
     </html>
-    """.format(TF_VERSION=TF_VERSION)
+    """.format(TF_VERSION="2.18.0")  # Usa el valor directamente o define TF_VERSION arriba
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
