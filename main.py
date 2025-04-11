@@ -33,32 +33,72 @@ try:
     print("✅ Modelo cargado correctamente")
 except Exception as e:
     raise RuntimeError(f"Error al cargar el modelo .h5: {str(e)}")
+# Añade estas líneas ANTES de definir las rutas
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="static")
 
+# Reemplaza tu ruta principal por esto:
 @app.get("/", response_class=HTMLResponse)
-def home():
+async def read_root():
     return """
+    <!DOCTYPE html>
     <html>
-        <head>
-            <title>MNIST Classifier</title>
-            <style>
-                body { 
-                    font-family: Arial, sans-serif; 
-                    max-width: 800px; 
-                    margin: 0 auto; 
-                    padding: 20px; 
+    <head>
+        <title>Clasificador MNIST</title>
+        <style>
+            body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+            h1 { color: #333; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .upload-box { border: 2px dashed #ccc; padding: 20px; margin: 20px 0; }
+            button { background: #4CAF50; color: white; border: none; padding: 10px 20px; cursor: pointer; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Clasificador de Dígitos MNIST</h1>
+            <div class="upload-box">
+                <input type="file" id="imageInput" accept="image/*">
+                <p>Sube una imagen de un dígito (0-9)</p>
+                <img id="preview" style="max-width: 100%; display: none;">
+            </div>
+            <button onclick="predict()">Predecir</button>
+            <div id="result" style="margin-top: 20px; font-size: 1.2em;"></div>
+        </div>
+
+        <script>
+            document.getElementById('imageInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const preview = document.getElementById('preview');
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+            });
+
+            async function predict() {
+                const fileInput = document.getElementById('imageInput');
+                const resultDiv = document.getElementById('result');
+                
+                if (!fileInput.files.length) {
+                    resultDiv.textContent = 'Por favor selecciona una imagen';
+                    return;
                 }
-                code { 
-                    background: #f4f4f4; 
-                    padding: 2px 5px; 
+
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                try {
+                    resultDiv.textContent = 'Procesando...';
+                    const response = await fetch('/predict', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    resultDiv.innerHTML = `Predicción: <strong>${data.digit}</strong> (Confianza: ${(data.confidence * 100).toFixed(2)}%)`;
+                } catch (error) {
+                    resultDiv.textContent = 'Error: ' + error.message;
                 }
-            </style>
-        </head>
-        <body>
-            <h1>API de Clasificación MNIST</h1>
-            <p><strong>Versión TensorFlow:</strong> {TF_VERSION}</p>
-            <p>Endpoint disponible: <code>POST /predict</code></p>
-            <p>Prueba la API en <a href="/docs">/docs</a></p>
-        </body>
+            }
+        </script>
+    </body>
     </html>
     """
 
