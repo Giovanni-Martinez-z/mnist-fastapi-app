@@ -22,7 +22,6 @@ model = tf.keras.models.load_model('mnist_model.h5')
 async def predict(file: UploadFile = File(...)):
     try:
         image = Image.open(io.BytesIO(await file.read())).convert('L')
-        image = Image.invert(image)
         image = image.resize((28, 28))
         image_array = np.array(image) / 255.0
         input_data = image_array[np.newaxis, ...].astype(np.float32)
