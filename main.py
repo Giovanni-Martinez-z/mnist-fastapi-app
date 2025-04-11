@@ -13,7 +13,7 @@ app = FastAPI()
 
 # Configuración para servir archivos estáticos
 app.mount("/templates", StaticFiles(directory="templates"), name="templates")
-templates = Jinja2Templates(directory="static")
+templates = Jinja2Templates(directory="templates")
 
 # Cargar modelo MNIST
 model = tf.keras.models.load_model('mnist_model.h5')
@@ -35,7 +35,7 @@ async def predict(file: UploadFile = File(...)):
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse("templates/index.html", {"request": request})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
