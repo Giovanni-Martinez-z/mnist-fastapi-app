@@ -7,7 +7,7 @@ from PIL import Image
 import io
 
 app = FastAPI()
-model = load_model('mnist_model.h5')
+model = load_model('mnist_model_v2.h5')
 
 
 @app.post("/predict")
