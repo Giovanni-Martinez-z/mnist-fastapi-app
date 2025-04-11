@@ -12,7 +12,7 @@ import uvicorn  # Asegúrate de importar uvicorn también
 app = FastAPI()
 
 # Configuración para servir archivos estáticos
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/templates", StaticFiles(directory="templates"), name="templates")
 templates = Jinja2Templates(directory="static")
 
 # Cargar modelo MNIST
@@ -35,7 +35,7 @@ async def predict(file: UploadFile = File(...)):
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("templates/index.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
