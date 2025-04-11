@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clasificador de Dígitos MNIST</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        input[type="file"] {
+            margin: 20px;
+        }
+
+        #resultado {
+            font-size: 24px;
+            margin-top: 20px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clasificador de Dígitos (MNIST)</h1>
+
+    <form id="formulario" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required />
+        <br>
+        <button type="submit">Predecir</button>
+    </form>
+
+    <div id="resultado"></div>
+
+    <script>
+        const formulario = document.getElementById('formulario');
+        const resultado = document.getElementById('resultado');
+
+        formulario.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(formulario);
+
+            const respuesta = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await respuesta.json();
+            resultado.textContent = `Número predicho: ${data.prediccion}`;
+        });
+    </script>
+</body>
+</html>
