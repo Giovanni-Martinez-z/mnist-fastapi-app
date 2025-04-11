@@ -12,7 +12,7 @@ app = FastAPI(title="MNIST Classifier API")
 # Cargar modelo con manejo de errores
 try:
     # Opción 1: Para modelos .keras (recomendado)
-    model = tf.keras.models.load_model('mnist_model.keras')
+    model = tf.keras.models.load_model('mnist_model.h1')
     
     # Opción 2: Si usas TFLite (más ligero para producción)
     # interpreter = tf.lite.Interpreter(model_path="mnist_model.tflite")
