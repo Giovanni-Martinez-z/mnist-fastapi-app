@@ -84,6 +84,11 @@
                     body: formData
                 });
 
+                if (!response.ok) {
+                    const errorText = await response.text();  // leer respuesta como texto
+                    throw new Error(`Error del servidor: ${errorText}`);
+                }
+
                 const data = await response.json();
                 resultDiv.innerHTML = `
                     <strong>Predicción:</strong> ${data.digit}<br>
