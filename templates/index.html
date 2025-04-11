@@ -3,90 +3,94 @@
 <head>
     <title>Clasificador MNIST</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        canvas { border: 2px solid #000; margin: 20px 0; background: white; }
-        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
-        #result { font-size: 24px; margin: 20px 0; }
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .upload-box { border: 2px dashed #ccc; padding: 20px; text-align: center; margin: 20px 0; }
+        #preview { max-width: 280px; max-height: 280px; margin: 10px auto; display: block; }
+        #result { font-size: 24px; margin: 20px 0; text-align: center; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h1>Clasificador de Dígitos MNIST</h1>
+    <h1 style="text-align: center;">Clasificador de Dígitos MNIST</h1>
     
-    <div>
-        <canvas id="canvas" width="280" height="280"></canvas>
+    <div class="upload-box">
+        <input type="file" id="imageUpload" accept="image/*">
+        <p>O arrastra y suelta una imagen aquí</p>
+        <img id="preview" style="display: none;">
     </div>
     
-    <div>
-        <button onclick="predict()">Predecir</button>
-        <button onclick="clearCanvas()">Limpiar</button>
+    <div style="text-align: center;">
+        <button onclick="predict()">Predecir Dígito</button>
     </div>
     
-    <div id="result">Dibuja un número y haz clic en "Predecir"</div>
+    <div id="result"></div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
+        const uploadBox = document.querySelector('.upload-box');
+        const fileInput = document.getElementById('imageUpload');
+        const preview = document.getElementById('preview');
+        const resultDiv = document.getElementById('result');
 
-        // Configuración del dibujo
-        ctx.lineWidth = 15;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#000000';
+        // Manejar arrastrar y soltar
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#4CAF50';
+        });
 
-        // Eventos para dibujar
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.style.borderColor = '#ccc';
+        });
 
-        function startDrawing(e) {
-            isDrawing = true;
-            draw(e);
-        }
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#ccc';
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                showPreview(e.dataTransfer.files[0]);
+            }
+        });
 
-        function draw(e) {
-            if (!isDrawing) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        }
+        // Manejar selección de archivo
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                showPreview(e.target.files[0]);
+            }
+        });
 
-        function stopDrawing() {
-            isDrawing = false;
-            ctx.beginPath();
-        }
-
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            document.getElementById('result').innerText = 'Dibuja un número y haz clic en "Predecir"';
+        function showPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
         }
 
         async function predict() {
-            // Convertir canvas a imagen
-            const image = canvas.toDataURL('image/png');
-            
+            if (!fileInput.files.length) {
+                resultDiv.textContent = 'Por favor selecciona una imagen primero';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
             try {
+                resultDiv.textContent = 'Procesando...';
+                
                 const response = await fetch('/predict', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ image: image.split(',')[1] })
+                    body: formData
                 });
-                
-                const result = await response.json();
-                document.getElementById('result').innerHTML = `
-                    <strong>Predicción:</strong> ${result.digit}<br>
-                    <strong>Probabilidad:</strong> ${(result.probabilities[result.digit] * 100).toFixed(2)}%
+
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <strong>Predicción:</strong> ${data.digit}<br>
+                    <strong>Confianza:</strong> ${(data.confidence * 100).toFixed(2)}%
                 `;
             } catch (error) {
-                document.getElementById('result').innerText = 'Error al predecir: ' + error.message;
+                resultDiv.textContent = 'Error al procesar la imagen: ' + error.message;
             }
         }
     </script>
