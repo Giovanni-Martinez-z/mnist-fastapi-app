@@ -9,7 +9,7 @@ import io
 app = FastAPI()
 
 # Cargar modelo
-model = load_model('mnist_light.h5')
+model = load_model('mnist_model.h5')
 
 # Directorio de plantillas HTML
 templates = Jinja2Templates(directory="templates")
